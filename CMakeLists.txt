@@ -15,9 +15,8 @@ include_directories(${CLANG_INCLUDE_DIRS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 
 set(SOURCES
-        src/main.cpp
-        src/Generator.cpp
-        src/GeneratorUnitHandler.cpp
+    src/main.cpp
+    src/Extractor.cpp
 )
 
 add_executable(headless ${SOURCES})

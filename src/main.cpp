@@ -1,13 +1,13 @@
 #include <fstream>
 
-#include "Generator.h"
+#include "Extractor.h"
 
 #include <clang/Tooling/Tooling.h>
 #include <iostream>
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        std::cerr << "Usage: headless <file.hpp>" << std::endl;
+        std::cerr << "Usage: headless [file.hpp]" << std::endl;
         return 1;
     }
 
@@ -20,31 +20,25 @@ int main(int argc, char **argv) {
     }
     std::string code((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
-    // Clang arguments (only syntax checking, no includes)
     std::vector<std::string> args = {
         "-std=c++17",
-        "-fsyntax-only",  // Only check syntax
-        "-fms-extensions",  // ✅ Allow unknown type parsing without errors
-       "-fno-delayed-template-parsing", // ✅ Ensures Clang doesn’t try to instantiate templates
-       "-fno-elide-type",  // ✅ Keeps all type names exactly as written
-        "-Wno-everything",
-         "-ffreestanding",
-         "-Wno-pragma-once-outside-header",  // ✅ Ignore #pragma once warnings
-         "-Wno-invalid-source-encoding",  // ✅ Ignore invalid encoding warnings
-         "-Wno-unknown-warning-option" // ✅ Ignore unknown warning options
-        "-nostdinc",       // ✅ Disable standard system includes
-        "-nostdinc++"      // ✅ Disable standard C++ includes
+        "-fsyntax-only",  // ✅ Only check syntax, don't expand macros/includes
+        "-ffreestanding",  // ✅ Tell Clang not to assume standard library presence
+        "-Wno-everything", // ✅ Suppress all warnings
+        "-nostdinc",       // ✅ Completely disable standard includes
+        "-nostdinc++",     // ✅ Disable C++ standard includes
+        "-E"               // ✅ Keep preprocessor directives untouched (raw mode)
     };
 
     bool success = clang::tooling::runToolOnCodeWithArgs(
-        std::make_unique<Generator>(), code, args, filename
+        std::make_unique<ExtractAction>(), code, args, filename
     );
 
     if (!success) {
-        std::cerr << "Syntax errors found in " << filename << std::endl;
+        std::cerr << "Error processing file " << filename << std::endl;
         return 1;
     }
 
-    std::cout << "Parsing completed for " << filename << std::endl;
+    std::cout << "Extraction complete!" << std::endl;
     return 0;
 }
