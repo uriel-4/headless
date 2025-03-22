@@ -1,5 +1,10 @@
 #include "Extractor.h"
 #include <fstream>
+#include <iostream>
+
+bool is_whitespace(char a) {
+    return a == ' ' || a == '\t' || a == '\n' || a == '\r' || a == '\f' || a == '\v';
+}
 
 bool ImplementationExtractor::VisitFunctionDecl(clang::FunctionDecl *f) {
     if (f->hasBody() && !f->isConstexpr()) {
@@ -29,54 +34,81 @@ bool ImplementationExtractor::VisitFunctionDecl(clang::FunctionDecl *f) {
         s << body;
         s << ";\n";
 
-        replace(range, ";");
+        long idx = getStartOffset(range.getBegin()) - 1;
+        while (idx >= 0 && is_whitespace(originalAt(idx))) { idx--; }
+        replace(idx + 1, getEndOffset(range.getEnd()), ";");
         cppCode << s.str();
-
-//        clang::SourceRange bodyRange = FD->getBody()->getSourceRange();
-//        std::string functionBody = clang::Lexer::getSourceText(
-//            clang::CharSourceRange::getCharRange(bodyRange), SM, clang::LangOptions()).str();
-//
-//        // ✅ Remove function body from header
-//        Rewriter.ReplaceText(bodyRange, ";");
-//
-//        // ✅ Save function implementation for .cpp
-//        cppCode << functionBody << "\n";
     }
     return true;
 }
 
 bool ImplementationExtractor::VisitVarDecl(clang::VarDecl *decl) {
-    if (decl->hasInit() && (!isInsideRecord(decl) || decl->isStaticDataMember()) && !decl->isConstexpr()) {
-        auto range = decl->getSourceRange();
-
-        auto type = originalAt(decl->getTypeSourceInfo()->getTypeLoc().getSourceRange());
-
-        std::stringstream h;
-        if (!isInsideRecord(decl)) h << "extern ";
-        if (decl->isStaticDataMember()) h << "static ";
-        h << type;
-        h << " " << decl->getNameAsString();
-
-        std::stringstream s;
-        auto ifdef = getIfdefAt(SM.getFileOffset(SM.getSpellingLoc(decl->getBeginLoc())));
-        if (ifdef) {
-            s << *ifdef << "\n";
-        }
-        s << type;
-        s << " " << decl->getQualifiedNameAsString();
-        s << " = " << originalAt(decl->getInit()->getSourceRange());
-        s << ";\n";
-        if (ifdef) {
-            s << "#endif\n";
+        bool hasInit = decl->hasInit();
+    if (!llvm::isa<clang::ParmVarDecl>(decl) && (!isInsideRecord(decl) || decl->isStaticDataMember()) && !decl->isConstexpr() && !decl->getType()->isUndeducedAutoType()) {
+        clang::SourceRange typeRange, initRange;
+        if (!hasInit) {
+            auto eq = clang::Lexer::findLocationAfterToken(decl->getLocation(), clang::tok::equal, SM, langOpts, true);
+            hasInit = getEndOffset(eq) != 0;
+            std::cout << decl->getQualifiedNameAsString() << " : hasInit=" << hasInit << " " << originalAt(eq) << " eq=" << getEndOffset(eq) << " endloc=" << getEndOffset(decl->getEndLoc()) << " : " << originalAt(decl->getSourceRange()) << std::endl;
+            if (hasInit) {
+                initRange = { eq, decl->getEndLoc() };
+                typeRange = { decl->getBeginLoc(), decl->getLocation() };
+                std::cout << "initRange=" << originalAt(initRange) << " typeRange=" << originalAt(typeRange) << std::endl;
+            }
+        } else {
+            typeRange = decl->getTypeSourceInfo()->getTypeLoc().getSourceRange();
+            initRange = decl->getInit()->getSourceRange();
         }
 
-        replace(range, h.str());
-        cppCode << s.str();
+        if (hasInit) {
+            auto range = decl->getSourceRange();
+
+            std::string type;
+            if (decl->getType()->getContainedAutoType()) {
+                type = decl->getType().getAsString();
+            } else {
+                type = originalAt(typeRange);
+            }
+
+            // std::stringstream h;
+            // if (!isInsideRecord(decl) && !decl->isFunctionOrMethodVarDecl()) h << "extern ";
+            // if (decl->isStaticDataMember()) h << "static ";
+            // h << type;
+            // h << " " << decl->getNameAsString();
+
+            auto eq = clang::Lexer::findLocationAfterToken(decl->getEndLoc(), clang::tok::equal, SM, langOpts, true);
+            if (eq.isValid() && getStartOffset(eq) > getEndOffset(decl->getEndLoc())) {
+                std::cout << "replacing \"" << originalAt(getStartOffset(eq), getEndOffset(initRange.getEnd())) << "\" with nothing\n";
+                // replace({ eq, decl->getEndLoc() }, "");
+                replace(getStartOffset(eq), getEndOffset(initRange.getEnd()), "");
+            }
+
+            std::stringstream s;
+            auto ifdef = getIfdefAt(SM.getFileOffset(SM.getSpellingLoc(decl->getBeginLoc())));
+            if (ifdef) {
+                s << *ifdef << "\n";
+            }
+            s << type;
+            s << " " << decl->getQualifiedNameAsString();
+            s << " = " << originalAt(initRange);
+            s << ";\n";
+            if (ifdef) {
+                s << "#endif\n";
+            }
+
+            // replace(range, h.str());
+            cppCode << s.str();
+        }
     }
     return true;
 }
 
 bool ImplementationExtractor::VisitFieldDecl(clang::FieldDecl *decl) {
+    // if (decl->hasInClassInitializer()) {
+        std::cout << "FieldDecl" << std::endl;
+    // }
+    return true;
+
     // if (decl->hasInClassInitializer()) {
     //     auto range = decl->getSourceRange();
     //
@@ -110,7 +142,6 @@ bool ImplementationExtractor::VisitFieldDecl(clang::FieldDecl *decl) {
     //     replace(range, h.str());
     //     cppCode << s.str();
     // }
-    return true;
 }
 
 bool ImplementationExtractor::VisitCXXMethodDecl(clang::CXXMethodDecl *MD) {

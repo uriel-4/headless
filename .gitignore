@@ -1,3 +1,6 @@
 cmake-*
 .idea
 build
+
+test/*/.result.cpp
+test/*/.result.hpp

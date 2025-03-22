@@ -151,15 +151,49 @@ private:
         return clang::Lexer::getSourceText(clang::CharSourceRange::getTokenRange(range), SM, langOpts).str();
     }
 
+    std::string originalAt(long start, long end) {
+        auto buffer = SM.getBufferData(SM.getMainFileID());
+        if (start >= 0 && static_cast<size_t>(start) < buffer.size() && end >= start && static_cast<size_t>(end) < buffer.size()) {
+            return std::string(buffer.substr(start, end - start));
+        }
+        return "";
+    }
+
+    char originalAt(long offset) {
+        auto buffer = SM.getBufferData(SM.getMainFileID());
+        if (offset >= 0 && static_cast<size_t>(offset) < buffer.size()) {
+            return buffer[offset];
+        }
+        return '\0';
+    }
+
     void replace(clang::SourceRange range, clang::StringRef newString) {
-        const long start = SM.getFileOffset(SM.getSpellingLoc(range.getBegin()));
-        const long end = SM.getFileOffset(SM.getSpellingLoc(clang::Lexer::getLocForEndOfToken(range.getEnd(), 0, SM, langOpts)));
+        replacements.emplace_back(std::pair{ getStartOffset(range.getBegin()), getEndOffset(range.getEnd()) }, newString);
+    }
+
+    long getStartOffset(clang::SourceLocation l) {
+        return SM.getFileOffset(SM.getSpellingLoc(l));
+    }
+
+    long getEndOffset(clang::SourceLocation l) {
+        l = clang::Lexer::getLocForEndOfToken(l, 0, SM, langOpts);
+        return SM.getFileOffset(SM.getSpellingLoc(l));
+    }
+
+    void replace(long start, long end, clang::StringRef newString) {
         replacements.emplace_back(std::pair{ start, end }, newString);
     }
 };
 
+struct ExtractionResult {
+    std::string h_code;
+    std::string c_code;
+};
+
 class ExtractAction : public clang::ASTFrontendAction {
 public:
+
+    ExtractAction(std::shared_ptr<ExtractionResult> r): result(r) {}
 
     void ExecuteAction() override {
         rules = std::make_shared<std::vector<std::pair<long, IfDefRule>>>();
@@ -178,17 +212,13 @@ public:
         ImplementationExtractor extractor(Rewriter, rules, getCompilerInstance().getSourceManager());
         extractor.TraverseDecl(getCompilerInstance().getASTContext().getTranslationUnitDecl());
 
-        //    // ✅ Save .h and .cpp files
-        //    std::ofstream headerFile("output.h");
-        //    headerFile << Extractor.getModifiedHeader();
-        //    headerFile.close();
-        //
-        //    std::ofstream cppFile("output.cpp");
-        //    cppFile << Extractor.getCppImplementations();
-        //    cppFile.close();
+        result->h_code = extractor.getModifiedHeader();
+        result->c_code = extractor.getCppImplementations();
+    }
 
-        printf("header:\n%s\n", extractor.getModifiedHeader().c_str());
-        printf("source:\n%s\n", extractor.getCppImplementations().c_str());
+    bool BeginSourceFileAction(clang::CompilerInstance &CI) override {
+        CI.getDiagnostics().setClient(new clang::IgnoringDiagConsumer(), /*ShouldOwn=*/true);
+        return clang::ASTFrontendAction::BeginSourceFileAction(CI);
     }
 
     std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
@@ -201,6 +231,7 @@ public:
 
 private:
 
+    std::shared_ptr<ExtractionResult> result;
     clang::Rewriter Rewriter;
     std::unique_ptr<IfDefTracker> tracker;
     std::shared_ptr<std::vector<std::pair<long, IfDefRule>>> rules;
