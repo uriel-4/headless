@@ -27,13 +27,14 @@ C++ already allows writing everything in only `.hpp` files! It's just compilers 
 - `headless` also generates `gsrc/sources.cmake` file with paths to all `.cpp` files listed, to include as sources for CMake
 
 ### Status
-- [x] passing values of static/global variables
+- [x] [passing values of static/global variables](https://github.com/uriel-4/headless/tree/dev/test/static)
 - [x] passing functions bodies
-  - [x] except inline, constexpr
-  - [x] operators
-  - [x] pass annotations
-- [x] namespace support
-- [x] #ifdef support
+  - [x] except [inline](https://github.com/uriel-4/headless/tree/dev/test/inline), constexpr
+  - [x] [operators](https://github.com/uriel-4/headless/tree/dev/test/operator)
+  - [x] [keep annotations](https://github.com/uriel-4/headless/tree/dev/test/annotation)
+- [x] [namespace support](https://github.com/uriel-4/headless/tree/dev/test/namespace)
+- [x] [#ifdef support](https://github.com/uriel-4/headless/tree/dev/test/ifdef)
+- [x] [generation of #line directives for debugger](https://github.com/uriel-4/headless/tree/dev/test/lines)
 - [ ] review explicit templates
 - [ ] CMake integration
 - [x] Linux support
