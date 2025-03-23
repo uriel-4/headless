@@ -40,9 +40,7 @@ jobs:
         cmake -B build \
           -DCMAKE_BUILD_TYPE=Release \
           -DLLVM_DIR=/usr/lib/llvm-16/lib/cmake/llvm \
-          -DClang_DIR=/usr/lib/llvm-16/lib/cmake/clang \
-          -DCMAKE_CXX_COMPILER=clang++-16 \
-          -DCMAKE_C_COMPILER=clang-16
+          -DClang_DIR=/usr/lib/llvm-16/lib/cmake/clang
 
     - name: Build
       run: cmake --build build --config Release
