@@ -89,7 +89,7 @@ jobs:
 
     - name: Install LLVM on Windows
       run: |
-        choco install llvm --version=17.0.6 -y
+        choco install llvm --version=17.0.6 -y --allow-downgrade
 
     - name: Configure CMake
       run: >
