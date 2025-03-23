@@ -5,7 +5,7 @@
 ## Why?
 C/C++ is one of the few languages that requires manually maintaining header files. While separating declarations and definitions may be helpful for writing libraries, but I believe not really pleasant for rapid prototyping and workflow that requires multiple iterations.
 
-There are other approaches, like [lazycpp](https://github.com/mjspncr/lzz3) that makes you write code in .lzz files with custom macros, or [makeheaders](https://github.com/bjconlan/makeheaders) that gives an option to write in one file, but still twice declaration and definition in different places.
+There are other approaches, like [lazycpp](https://github.com/mjspncr/lzz3) that makes you write code in .lzz files with custom macros, or [makeheaders](https://github.com/bjconlan/makeheaders) that gives an option to write in one file, but still twice declaration and definition in different places. These seem like a hacky way to do that, and IDE/language servers/debuggers are usually not happy about it.
 
 ### The Idea
 C++ already allows writing everything in only `.hpp` files! It's just compilers usually hate it. Impossible circular dependencies, slow recompilation time and no hot reloading (was my case), usually make you write separate source and header files anyway.
