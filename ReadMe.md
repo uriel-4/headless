@@ -1,4 +1,4 @@
-# headless — Automatic C++ Header Generator
+# (indev) headless — Automatic C++ Header Generator
 
 `headless` is a tool that splits .hpp files into corresponding .h and .cpp files, eliminating the need to manually duplicate function declarations and definitions.
 
@@ -24,43 +24,26 @@ C++ already allows writing everything in a single .hpp file — it's just not sc
 
 ## Proposed pipeline
 
-Here is how I use `headless` in my projects:
 - The source code is inside `src/` as `.hpp` files
 - `headless` generates `.cpp` and `.hpp` files inside `gsrc/` (_gitignored_) as preprocess command in CMake
-- `headless` also generates `gsrc/sources.txt` file with paths to all `.cpp` files listed, to include as sources for CMake
-
-You can try a sample project here: https://github.com/uriel-4/headless-example
-
-But essentially `headless` is just a tool that divides `.hpp` files into `.cpp` and `.hpp`, and you can use it as you like.
+- `headless` also generates `gsrc/sources.cmake` file with paths to all `.cpp` files listed, to include as sources for CMake
 
 ### Status
+- [x] passing values of static/global variables
 - [x] passing functions bodies
   - [x] except inline, constexpr
   - [x] operators
   - [x] pass annotations
 - [x] namespace support
 - [x] #ifdef support
+- [ ] review explicit templates
+- [ ] CMake integration
 - [x] Linux support
 - [x] macOS support
 - [ ] Windows support
-- [ ] templates
-
-### Installing
-You can add `headless` as submodule to your project:
-```bash
-git submodule add https://github.com/uriel-4/headless lib/headless
-git submodule update --init --recursive
-```
-And include its CMake into yours:
-```cmake
-set(HEADLESS_SYNC_FROM src/)
-set(HEADLESS_SYNC_TO gsrc/)
-add_subdirectory(lib/headless)
-include(gsrc/sources.cmake)
-```
 
 #### Installing as CLI
-You can still compile `headless` and use it with command line interface:
+You can compile `headless` and use it with command line interface:
 ```bash
 git clone https://github.com/uriel-4/headless
 cd headless
