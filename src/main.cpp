@@ -1,5 +1,3 @@
-#include <fstream>
-
 #include "utils.hpp"
 #include "IfDefParser.hpp"
 #include "Extractor.hpp"
@@ -150,9 +148,7 @@ void sync(
 
             if ((ex == "c" || ex == "cc" || ex == "cpp") && exists(to / name)) {
                 auto last_modified = get_last_modified(from / name);
-                out_sources.emplace_back(
-                    true, false, "", path, last_modified
-                );
+                out_sources.push_back({ true, false, "", path, last_modified });
             }
         } else {
             auto last_modified = get_last_modified(from / name);
@@ -167,7 +163,7 @@ void sync(
                 if (!exists(c_file) || !exists(h_file) || !options.incremental || get_last_modified(times, path) != last_modified) {
                     if (exists(h_file)) unlink(h_file);
                     copy(from / name, h_file);
-                    out_sources.emplace_back(false, false, path, h_file, last_modified);
+                    out_sources.push_back({ false, false, path, h_file, last_modified });
                 }
                 continue;
             }
@@ -179,18 +175,18 @@ void sync(
                 std::cout << "Generate [" << (dir / (filename(name) + ".hpp")) << ", " << (dir / (filename(name) + ".cpp")) << "] from [" << path << "]; cachedTime=" << get_last_modified(times, path) << ", time=" << last_modified << std::endl;
                 auto [h, c] = process(
                     code.value(),
-                    path,
+                    std::filesystem::relative(from / name, to),
                     { dir / (filename(name) + ".hpp"), dir / (filename(name) + ".cpp") },
                     options
                 );
                 auto last_modified = get_last_modified(from / name);
                 write_file(c_file, c);
-                out_sources.emplace_back(true, true, path, c_file, last_modified);
+                out_sources.push_back({ true, true, path, c_file, last_modified });
                 write_file(h_file, h);
-                out_sources.emplace_back(false, true, path, h_file, last_modified);
+                out_sources.push_back({ false, true, path, h_file, last_modified });
             } else {
-                out_sources.emplace_back(true, true, path, c_file, last_modified);
-                out_sources.emplace_back(false, true, path, h_file, last_modified);
+                out_sources.push_back({ true, true, path, c_file, last_modified });
+                out_sources.push_back({ false, true, path, h_file, last_modified });
             }
         }
     }

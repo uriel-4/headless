@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <fstream>
 #include <optional>
 #include <vector>
 #include <string>
