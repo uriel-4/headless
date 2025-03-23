@@ -49,10 +49,14 @@ But essentially `headless` is just a tool that divides `.hpp` files into `.cpp` 
 You can add `headless` as submodule to your project:
 ```bash
 git submodule add https://github.com/uriel-4/headless lib/headless
+git submodule update --init --recursive
 ```
 And include its CMake into yours:
 ```cmake
-add_project(headless lib/headless)
+set(HEADLESS_SYNC_FROM src/)
+set(HEADLESS_SYNC_TO gsrc/)
+add_subdirectory(lib/headless)
+include(gsrc/sources.cmake)
 ```
 
 #### Installing as CLI

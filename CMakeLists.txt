@@ -37,15 +37,8 @@ else()
     add_executable(headless_tool src/main.cpp)
     target_link_libraries(headless_tool PRIVATE clangTooling cxxopts)
 
-    add_custom_command(
-        OUTPUT ${HEADLESS_SYNC_TO}/sources.cmake
+    execute_process(
         COMMAND headless_tool --from=${HEADLESS_SYNC_FROM} --to=${HEADLESS_SYNC_TO} -ig
-        DEPENDS headless_tool
-        COMMENT "Generating source files with headless"
-    )
-
-    add_custom_target(run_headless
-        DEPENDS ${HEADLESS_SYNC_TO}/sources.cmake
     )
 
 endif()
