@@ -19,8 +19,8 @@ add_subdirectory(lib/cxxopts)
 if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
 
     add_executable(headless src/main.cpp)
-    target_compile_options(headless PRIVATE -Oz -fdata-sections -ffunction-sections)
-    set_target_properties(headless PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+#    target_compile_options(headless PRIVATE -Oz -fdata-sections -ffunction-sections)
+#    set_target_properties(headless PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 
     target_link_libraries(headless PRIVATE clangTooling cxxopts)
 
