@@ -87,10 +87,11 @@ jobs:
     - name: Download submodules
       run: git submodule update --init --recursive
 
-    - name: Install LLVM on Windows
+    - name: Download LLVM 17 (official release with CMake config)
       run: |
-        choco install llvm --version=17.0.6 -y --allow-downgrade
-
+        curl -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/LLVM-17.0.6-win64.exe
+        7z x LLVM-17.0.6-win64.exe -oLLVM
+    
     - name: Configure CMake
       run: >
         cmake -B build -S . 
