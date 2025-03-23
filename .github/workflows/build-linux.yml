@@ -41,7 +41,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DLLVM_DIR=/usr/lib/llvm-16/lib/cmake/llvm \
           -DClang_DIR=/usr/lib/llvm-16/lib/cmake/clang \
-          -DCMAKE_CXX=FLAGS=-lstdc++fs
+          -DCMAKE_CXX_FLAGS=-lstdc++fs
 
     - name: Build
       run: cmake --build build --config Release
