@@ -32,16 +32,18 @@ jobs:
         sudo apt-get install -y wget gnupg lsb-release
         wget https://apt.llvm.org/llvm.sh
         chmod +x llvm.sh
-        sudo ./llvm.sh 16 all
-        sudo apt-get install -y libclang-16-dev llvm-16-dev clang-tools-16
+        sudo ./llvm.sh 17 all
+        sudo apt-get install -y libclang-17-dev llvm-17-dev clang-tools-17
 
     - name: Configure CMake
       run: |
         cmake -B build \
           -DCMAKE_BUILD_TYPE=Release \
-          -DLLVM_DIR=/usr/lib/llvm-16/lib/cmake/llvm \
-          -DClang_DIR=/usr/lib/llvm-16/lib/cmake/clang \
-          -DCMAKE_CXX_FLAGS=-lstdc++fs
+          -DLLVM_DIR=/usr/lib/llvm-17/lib/cmake/llvm \
+          -DClang_DIR=/usr/lib/llvm-17/lib/cmake/clang \
+          -DCMAKE_CXX_FLAGS=-lstdc++fs \
+          -DCMAKE_C_COMPILER=clang-17 \
+          -DCMAKE_CXX_COMPILER=clang++-17
 
     - name: Build
       run: cmake --build build --config Release
