@@ -64,7 +64,7 @@ jobs:
         echo "LLVM installed at:"
         brew --prefix llvm
 
-    - name: Configure CMake (Universal binary: arm64 + x86_64)
+    - name: Configure CMake
       run: |
         cmake -B build \
           -DCMAKE_BUILD_TYPE=Release \
