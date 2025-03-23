@@ -1,6 +1,7 @@
 cmake-*
 .idea
 build
+**/.DS_Store
 
 test/*/.result.cpp
 test/*/.result.hpp

@@ -5,12 +5,12 @@
 
 class Class {
 
-#ifdef A
+/* test comment */ #ifdef A
     void methodA(int a = 1, int b = 2) {
         printf("a = %d, b = %d\n", a, b);
     }
 
-#elifdef B
+#elif defined(B)
     int methodB(bool a = true) {
         printf("a = %d\n", a);
     }
@@ -21,8 +21,10 @@ class Class {
     }
 #endif
 
+// #ifdef muted
     int methodD() {
         printf("methodD\n");
     }
+// #endif
 
 };

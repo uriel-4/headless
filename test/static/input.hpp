@@ -20,8 +20,8 @@ public:
   }
 
   static std::string s2 = "123" + "456";
-  static std::map<std::string, std::function<void(int = 5)>> myMap = {};
-  static std:strings str1 = "123", str2 = "456", str3 = "789";
+  static std::map<std::string, bool> myMap = { {"a", true} };
+  static std::string str1 = "123", str2 = "456", str3 = "789";
   static std::pair<int, int> pair = {1, 2};
 
   static std::string s3 // comment with =
