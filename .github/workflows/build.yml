@@ -7,7 +7,7 @@ on:
     branches: [ "dev" ]
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-22.04
 
     strategy:
@@ -46,4 +46,38 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: headless-${{ runner.os }}
+        path: build/headless
+  
+  build-macos:
+    runs-on: macos-14
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download submodules
+      run: |
+        git submodule update --init --recursive
+
+    - name: Install LLVM via Homebrew
+      run: |
+        brew install llvm
+        echo "LLVM installed at:"
+        brew --prefix llvm
+
+    - name: Configure CMake (Universal binary: arm64 + x86_64)
+      run: |
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
+          -DCMAKE_PREFIX_PATH="$(brew --prefix llvm)"
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Upload macOS binary (Universal)
+      uses: actions/upload-artifact@v4
+      with:
+        name: headless-macos-universal
         path: build/headless
