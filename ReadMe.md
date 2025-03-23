@@ -1,24 +1,22 @@
 # (indev) headless — Automatic C++ Header Generator
 
-`headless` is a tool that splits .hpp files into corresponding .h and .cpp files, eliminating the need to manually duplicate function declarations and definitions.
+`headless` — is a tool that splits code files into corresponding `.hpp` and `.cpp` files, eliminating the need to manually duplicate function declarations and definitions.
 
 ## Why?
-C/C++ is one of the few modern languages that still requires manually maintaining header files. While separating declarations and definitions has benefits, it often slows down development — especially in iterative workflows like game development or rapid prototyping.
+C/C++ is one of the few languages that requires manually maintaining header files. While separating declarations and definitions may be helpful for writing libraries, but I believe not really pleasant for rapid prototyping and workflow that requires multiple iterations.
 
-Maintaining headers can be error-prone and tedious:
-- Forgetting to update declarations
-- Creating duplicate boilerplate
-- Manually adding new `.cpp` files to build scripts
-
-Other approaches exist (e.g., macro-based generators like [makeheaders](https://github.com/bjconlan/makeheaders) or alternative preprocessors like [lazycpp](https://github.com/mjspncr/lzz3)), but they often require non-standard extensions or hacks incompatible with IDEs or language servers.
+There are other approaches, like [lazycpp](https://github.com/mjspncr/lzz3) that makes you write code in .lzz files with custom macros, or [makeheaders](https://github.com/bjconlan/makeheaders) that gives an option to write in one file, but still twice declaration and definition in different places.
 
 ### The Idea
-C++ already allows writing everything in a single .hpp file — it's just not scalable. headless fixes that by automatically splitting these files into proper .h and .cpp files, without changing the way you write C++.
+C++ already allows writing everything in only `.hpp` files! It's just compilers usually hate it. Impossible circular dependencies, slow recompilation time and no hot reloading (was my case), usually make you write separate source and header files anyway.
+
+`headless` fixes that by automatically splitting these files into proper `.hpp` and `.cpp` files in a separate folder.
 
 ### Features
 - Write full definitions in `.hpp` files
 - Automatically generates `.hpp` + `.cpp` pairs
 - Compatible with IDEs, language servers, and existing toolchains
+- Generates #line directives for debuggers
 - Supports preprocessor directives and complex C++ features
 - Optional generation of `sources.cmake` for CMake
 
