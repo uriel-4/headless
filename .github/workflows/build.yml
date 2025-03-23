@@ -10,9 +10,6 @@ jobs:
   build-linux:
     runs-on: ubuntu-22.04
 
-    strategy:
-      fail-fast: false
-
     steps:
     - uses: actions/checkout@v4
 
@@ -80,3 +77,35 @@ jobs:
       with:
         name: headless-macos-universal
         path: build/headless
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download submodules
+      run: git submodule update --init --recursive
+
+    - name: Install LLVM on Windows
+      run: |
+        choco install llvm --version=17.0.6 -y
+
+    - name: Configure CMake
+      run: >
+        cmake -B build -S . 
+        -DCMAKE_BUILD_TYPE=Release
+        -G "Visual Studio 17 2022"
+        -A x64
+        -DLLVM_DIR="C:/Program Files/LLVM/lib/cmake/llvm"
+        -DClang_DIR="C:/Program Files/LLVM/lib/cmake/clang"
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Upload Windows binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: headless-windows
+        path: build/Release/headless.exe
+
