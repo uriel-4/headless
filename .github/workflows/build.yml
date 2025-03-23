@@ -98,8 +98,8 @@ jobs:
         -DCMAKE_BUILD_TYPE=Release
         -G "Visual Studio 17 2022"
         -A x64
-        -DLLVM_DIR="C:/Program Files/LLVM/lib/cmake/llvm"
-        -DClang_DIR="C:/Program Files/LLVM/lib/cmake/clang"
+        -DLLVM_DIR="${{ github.workspace }}/LLVM/lib/cmake/llvm"
+        -DClang_DIR="${{ github.workspace }}/LLVM/lib/cmake/clang"
 
     - name: Build
       run: cmake --build build --config Release
