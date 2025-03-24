@@ -87,12 +87,13 @@ jobs:
     - name: Download submodules
       run: git submodule update --init --recursive
 
-    - name: Install vcpkg and LLVM
+    - name: Install vcpkg and LLVM + Clang
       run: |
         git clone https://github.com/microsoft/vcpkg.git
         .\vcpkg\bootstrap-vcpkg.bat
-        .\vcpkg\vcpkg install llvm[core,clang]:x64-windows
-      shell: cmd
+        .\vcpkg\vcpkg.exe install llvm[core,clang]:x64-windows
+        .\vcpkg\vcpkg.exe list
+      shell: pwsh
         
     - name: Configure CMake
       run: >
