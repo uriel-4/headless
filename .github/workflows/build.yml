@@ -20,24 +20,21 @@ jobs:
       run: |
         git submodule update --init --recursive
 
-    - name: Install LLVM 16 from official APT repo
+    - name: Install LLVM 19 from official APT repo
       run: |
         sudo apt-get update
         sudo apt-get install -y wget gnupg lsb-release
         wget https://apt.llvm.org/llvm.sh
         chmod +x llvm.sh
-        sudo ./llvm.sh 17 all
-        sudo apt-get install -y libclang-17-dev llvm-17-dev clang-tools-17
+        sudo ./llvm.sh 19 all
+        sudo apt-get install -y libclang-19-dev llvm-19-dev clang-tools-19
 
     - name: Configure CMake
       run: |
         cmake -B build \
           -DCMAKE_BUILD_TYPE=Release \
-          -DLLVM_DIR=/usr/lib/llvm-17/lib/cmake/llvm \
-          -DClang_DIR=/usr/lib/llvm-17/lib/cmake/clang \
-          -DCMAKE_CXX_FLAGS=-lstdc++fs \
-          -DCMAKE_C_COMPILER=clang-17 \
-          -DCMAKE_CXX_COMPILER=clang++-17
+          -DLLVM_DIR=/usr/lib/llvm-19/lib/cmake/llvm \
+          -DClang_DIR=/usr/lib/llvm-19/lib/cmake/clang 
 
     - name: Build
       run: cmake --build build --config Release

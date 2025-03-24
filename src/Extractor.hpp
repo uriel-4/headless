@@ -95,12 +95,14 @@ public:
             bool customTypeRange = false;
             clang::SourceRange typeRange, initRange;
             if (!hasInit) {
-                auto eq = clang::Lexer::findLocationAfterToken(decl->getLocation(), clang::tok::equal, SM, langOpts, true);
-                hasInit = getEndOffset(eq) != 0;
-                if (hasInit) {
-                    initRange = { eq, decl->getEndLoc() };
-                    typeRange = { decl->getBeginLoc(), decl->getLocation() };
-                }
+                // we might be lied if llvm is not 19 version
+                // auto eq = clang::Lexer::findLocationAfterToken(decl->getLocation(), clang::tok::equal, SM, langOpts, true);
+                // hasInit = getEndOffset(eq) != 0;
+                // if (hasInit) {
+                //     initRange = { eq, decl->getEndLoc() };
+                //     typeRange = { decl->getBeginLoc(), decl->getLocation() };
+                // }
+                return true;
             } else {
                 initRange = decl->getInit()->getSourceRange();
                 typeRange = decl->getTypeSourceInfo()->getTypeLoc().getSourceRange();
