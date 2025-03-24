@@ -2,12 +2,9 @@ name: Build headless
 
 on:
   push:
-    branches: [ "dev", "release" ]
     tags:
       - "v*.*.*"
       - "v*.*.*-beta"
-  pull_request:
-    branches: [ "dev" ]
 
 jobs:
   build-linux:

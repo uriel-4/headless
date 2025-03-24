@@ -16,29 +16,5 @@ include_directories(${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
 
 add_subdirectory(lib/cxxopts)
 
-if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-
-    add_executable(headless src/main.cpp)
-#    target_compile_options(headless PRIVATE -Oz -fdata-sections -ffunction-sections)
-#    set_target_properties(headless PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
-
-    target_link_libraries(headless PRIVATE clangTooling cxxopts)
-
-else()
-
-    if (NOT DEFINED HEADLESS_SYNC_FROM)
-        set(HEADLESS_SYNC_FROM "${CMAKE_SOURCE_DIR}/src")
-    endif()
-    if (NOT DEFINED HEADLESS_SYNC_TO)
-        set(HEADLESS_SYNC_TO "${CMAKE_SOURCE_DIR}/gsrc")
-    endif()
-
-    add_executable(headless_tool src/main.cpp)
-    target_link_libraries(headless_tool PRIVATE clangTooling cxxopts)
-
-    execute_process(
-        COMMAND headless_tool --from=${HEADLESS_SYNC_FROM} --to=${HEADLESS_SYNC_TO} -ig
-    )
-
-endif()
-
+add_executable(headless src/main.cpp)
+target_link_libraries(headless PRIVATE clangTooling cxxopts)
