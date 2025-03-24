@@ -217,6 +217,8 @@ int main(int argc, char **argv) {
         auto test_dir = std::filesystem::path(result["test"].as<std::string>());
         for (const auto [test, is_dir] : read_dir(test_dir)) {
             if (!is_dir) continue;
+            if (test[0] == '-') continue;
+            
             remove(test_dir / test / ".result.hpp");
             remove(test_dir / test / ".result.cpp");
 
