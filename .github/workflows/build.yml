@@ -90,7 +90,7 @@ jobs:
     - name: Download and install LLVM 17
       run: |
         curl -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/LLVM-17.0.6-win64.exe
-        LLVM-17.0.6-win64.exe /S /D=C:\LLVM
+        .\LLVM-17.0.6-win64.exe /S /D=C:\LLVM
         
     - name: Configure CMake
       run: >
