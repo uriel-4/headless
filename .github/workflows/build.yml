@@ -94,6 +94,15 @@ jobs:
         .\vcpkg\vcpkg.exe install llvm[core,clang]:x64-windows
         .\vcpkg\vcpkg.exe list
       shell: pwsh
+
+    - name: Cache vcpkg installed packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          vcpkg/installed
+          vcpkg/buildtrees
+          vcpkg/packages
+        key: vcpkg-${{ runner.os }}-llvm
         
     - name: Configure CMake
       run: >
