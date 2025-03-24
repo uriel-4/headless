@@ -87,22 +87,15 @@ jobs:
     - name: Download submodules
       run: git submodule update --init --recursive
 
-    - name: Install vcpkg and LLVM + Clang
+    # - name: Download and extract prebuilt LLVM 19
+    #   run: |
+    #     curl -L -o llvm.7z https://github.com/c3lang/win-llvm/releases/download/llvm_19_1_5/llvm-19.1.5-windows-amd64-msvc17-msvcrt.7z
+    #     7z x llvm.7z -oC:\LLVM
+    #   shell: pwsh
+    - name: install llvm
       run: |
-        git clone https://github.com/microsoft/vcpkg.git
-        .\vcpkg\bootstrap-vcpkg.bat
-        .\vcpkg\vcpkg.exe install llvm[core,clang]:x64-windows
-        .\vcpkg\vcpkg.exe list
+        choco install llvm
       shell: pwsh
-
-    - name: Cache vcpkg installed packages
-      uses: actions/cache@v3
-      with:
-        path: |
-          vcpkg/installed
-          vcpkg/buildtrees
-          vcpkg/packages
-        key: vcpkg-${{ runner.os }}-llvm
         
     - name: Configure CMake
       run: >
@@ -111,6 +104,8 @@ jobs:
         -G "Visual Studio 17 2022"
         -A x64
         -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake
+        -DLLVM_DIR="C:/LLVM/lib/cmake/llvm"
+        -DClang_DIR="C:/LLVM/lib/cmake/clang"
       shell: cmd
 
     - name: Build
