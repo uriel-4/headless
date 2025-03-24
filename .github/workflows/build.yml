@@ -89,8 +89,8 @@ jobs:
 
     - name: Download and extract LLVM 17 ZIP (prebuilt)
       run: |
-        curl -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/LLVM-17.0.6-win64.zip
-        7z x LLVM-17.0.6-win64.zip -oLLVM
+        curl -L -o LLVM.zip https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/LLVM-17.0.6-win64.zip
+        7z x LLVM.zip -oLLVM
         
     - name: Configure CMake
       run: >
