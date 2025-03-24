@@ -3,6 +3,9 @@ name: Build headless
 on:
   push:
     branches: [ "dev", "release" ]
+    tags:
+      - "v*.*.*"
+      - "v*.*.*-beta"
   pull_request:
     branches: [ "dev" ]
 
@@ -39,10 +42,13 @@ jobs:
     - name: Build
       run: cmake --build build --config Release
 
+    - name: Test
+      run: build/headless --test=./test/
+
     - name: Upload built binary
       uses: actions/upload-artifact@v4
       with:
-        name: headless-${{ runner.os }}
+        name: headless-linux
         path: build/headless
   
   build-macos:
@@ -72,45 +78,93 @@ jobs:
     - name: Build
       run: cmake --build build --config Release
 
+    - name: Test
+      run: build/headless --test=./test/
+
     - name: Upload macOS binary (Universal)
       uses: actions/upload-artifact@v4
       with:
-        name: headless-macos-universal
+        name: headless-macos
         path: build/headless
+  
 
-  build-windows:
-    runs-on: windows-latest
+  # build-windows:
+  #   runs-on: windows-latest
 
-    steps:
-    - uses: actions/checkout@v4
+  #   steps:
+  #   - uses: actions/checkout@v4
 
-    - name: Download submodules
-      run: git submodule update --init --recursive
+  #   - name: Download submodules
+  #     run: git submodule update --init --recursive
 
-    - name: Download and extract prebuilt LLVM 19
-      run: |
-        curl -L -o llvm.7z https://github.com/c3lang/win-llvm/releases/download/llvm_19_1_5/llvm-19.1.5-windows-amd64-msvc17-msvcrt.7z
-        7z x llvm.7z -oC:\LLVM
-        Copy-Item "C:\LLVM\lib\cmake\llvm\LLVM-Config.cmake" -Destination "C:\LLVM\lib\cmake\llvm\LLVMConfig.cmake"
-      shell: pwsh
+  #   - name: Download and extract prebuilt LLVM 19
+  #     run: |
+  #       curl -L -o llvm.7z https://github.com/c3lang/win-llvm/releases/download/llvm_19_1_5/llvm-19.1.5-windows-amd64-msvc17-msvcrt.7z
+  #       7z x llvm.7z -oC:\LLVM
+  #       Copy-Item "C:\LLVM\lib\cmake\llvm\LLVM-Config.cmake" -Destination "C:\LLVM\lib\cmake\llvm\LLVMConfig.cmake"
+  #     shell: pwsh
         
-    - name: Configure CMake
-      run: >
-        cmake -B build -S . 
-        -DCMAKE_BUILD_TYPE=Release
-        -G "Visual Studio 17 2022"
-        -A x64
-        -DLLVM_DIR="C:\LLVM\lib\cmake\llvm"
-        -DClang_DIR="C:\LLVM\lib\cmake\clang"
-      # -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake
-      shell: cmd
+  #   - name: Configure CMake
+  #     run: >
+  #       cmake -B build -S . 
+  #       -DCMAKE_BUILD_TYPE=Release
+  #       -G "Visual Studio 17 2022"
+  #       -A x64
+  #       -DLLVM_DIR="C:\LLVM\lib\cmake\llvm"
+  #       -DClang_DIR="C:\LLVM\lib\cmake\clang"
+  #     # -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake
+  #     shell: cmd
 
-    - name: Build
-      run: cmake --build build --config Release
+  #   - name: Build
+  #     run: cmake --build build --config Release
 
-    - name: Upload Windows binary
-      uses: actions/upload-artifact@v4
+  #   - name: Upload Windows binary
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: headless-windows
+  #       path: build/Release/headless.exe
+
+  release:
+    needs: [build-linux, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+    - name: Download Linux artifact
+      uses: actions/download-artifact@v4
       with:
-        name: headless-windows
-        path: build/Release/headless.exe
+        name: headless-linux
+        path: ./artifacts/linux
 
+    - name: Rename Linux binary
+      run: mv ./artifacts/linux/headless ./artifacts/linux/headless-linux
+
+    - name: Download macOS artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: headless-macos
+        path: ./artifacts/macos
+
+    - name: Rename macOS binary
+      run: mv ./artifacts/macos/headless ./artifacts/macos/headless-macos
+
+    - name: Set release name
+      id: releasename
+      run: |
+        TAG="${{ github.ref_name }}"
+        if [[ "$TAG" == *"-beta"* ]]; then
+          echo "RELEASE_NAME=Beta $TAG" >> $GITHUB_ENV
+        else
+          echo "RELEASE_NAME=Release $TAG" >> $GITHUB_ENV
+        fi
+      shell: bash
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: ${{ env.RELEASE_NAME }}
+        tag_name: ${{ github.ref_name }}
+        draft: false
+        prerelease: ${{ contains(github.ref_name, '-beta') }}
+        files: |
+          ./artifacts/linux/headless-linux
+          ./artifacts/macos/headless-macos
