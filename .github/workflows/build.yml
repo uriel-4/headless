@@ -87,10 +87,10 @@ jobs:
     - name: Download submodules
       run: git submodule update --init --recursive
 
-    - name: Download and extract LLVM 17 ZIP (prebuilt)
+    - name: Download and install LLVM 17
       run: |
-        curl -L -o LLVM.zip https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/LLVM-17.0.6-win64.zip
-        7z x LLVM.zip -oLLVM
+        curl -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/LLVM-17.0.6-win64.exe
+        LLVM-17.0.6-win64.exe /S /D=C:\LLVM
         
     - name: Configure CMake
       run: >
@@ -98,8 +98,8 @@ jobs:
         -DCMAKE_BUILD_TYPE=Release
         -G "Visual Studio 17 2022"
         -A x64
-        -DLLVM_DIR="${{ github.workspace }}/LLVM/lib/cmake/llvm"
-        -DClang_DIR="${{ github.workspace }}/LLVM/lib/cmake/clang"
+        -DLLVM_DIR="C:/LLVM/lib/cmake/llvm"
+        -DClang_DIR="C:/LLVM/lib/cmake/clang"
 
     - name: Build
       run: cmake --build build --config Release
